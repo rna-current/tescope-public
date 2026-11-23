@@ -1,0 +1,34 @@
+TEscope-0.2.0-setup.exe: OK
+TEscope-0.2.0-windows-x86_64-portable.zip: OK
+TEscope-0.2.0-macos-arm64.zip: OK
+TEscope-0.2.0-linux-x86_64.tar.gz: OK
+tescope-0.2.0-py3-none-any.whl: OK
+tescope-0.2.0.tar.gz: OK
+tescope-acceptance-pack-0.2.0.tar.gz: OK
+sha=707886c0476f3f223a009391744b303d090778aa ref=refs/heads/ci-build/release-dryrun run=45144114790 attempt=1
+total 355784
+-rw-r--r-- 1 runner runner       681 Nov 23 09:10 SHA256SUMS
+-rw-r--r-- 1 runner runner 129037762 Nov 23 09:10 TEscope-0.2.0-linux-x86_64.tar.gz
+-rw-r--r-- 1 runner runner       100 Nov 23 09:10 TEscope-0.2.0-linux-x86_64.tar.gz.sha256
+-rw-r--r-- 1 runner runner  71677188 Nov 23 09:10 TEscope-0.2.0-macos-arm64.zip
+-rw-r--r-- 1 runner runner        96 Nov 23 09:10 TEscope-0.2.0-macos-arm64.zip.sha256
+-rw-r--r-- 1 runner runner  66449667 Nov 23 09:10 TEscope-0.2.0-setup.exe
+-rw-r--r-- 1 runner runner        90 Nov 23 09:10 TEscope-0.2.0-setup.exe.sha256
+-rw-r--r-- 1 runner runner  91904586 Nov 23 09:10 TEscope-0.2.0-windows-x86_64-portable.zip
+-rw-r--r-- 1 runner runner       108 Nov 23 09:10 TEscope-0.2.0-windows-x86_64-portable.zip.sha256
+-rw-r--r-- 1 runner runner    251732 Nov 23 09:10 tescope-0.2.0-py3-none-any.whl
+-rw-r--r-- 1 runner runner        97 Nov 23 09:10 tescope-0.2.0-py3-none-any.whl.sha256
+-rw-r--r-- 1 runner runner   2953847 Nov 23 09:10 tescope-0.2.0.tar.gz
+-rw-r--r-- 1 runner runner        87 Nov 23 09:10 tescope-0.2.0.tar.gz.sha256
+-rw-r--r-- 1 runner runner   1995810 Nov 23 09:10 tescope-acceptance-pack-0.2.0.tar.gz
+-rw-r--r-- 1 runner runner       103 Nov 23 09:10 tescope-acceptance-pack-0.2.0.tar.gz.sha256
+7df78d6607189ef6840fb29c02d9ca87e15ce00d43fcd1dc1a52f682290308a8  TEscope-0.2.0-linux-x86_64.tar.gz
+0b3dab1e7ad2ea04d4d470859b43cd3de345aa441272f22fe596d70481d4510b  TEscope-0.2.0-macos-arm64.zip
+0fea22e4e33731560849da58df87b20202373be27dca06be1c6fb307cde66ea7  TEscope-0.2.0-setup.exe
+a7cb108d9a720c7bd84e0fb954771cfe92cb6597c262aac1fe5c8045d5a7fe1f  TEscope-0.2.0-windows-x86_64-portable.zip
+8494e4d5ced2a0bbfbae8a0263543331fec580f43812eee40f45d1cf91222870  tescope-0.2.0-py3-none-any.whl
+0ef9fe15835e090b061eec5972d38fa92ad6b0f31a0bcf0aeede1e9de794409b  tescope-0.2.0.tar.gz
+4c0b3c43425385645af70cccccdc3e852f86a5ba3200a8db0df6af72a4944818  tescope-acceptance-pack-0.2.0.tar.gz
+https://github.com/rna-current/tescope-public/releases/tag/untagged-14bcc50983408f2e8b3e
+draft release dryrun-707886c047 holds 15 assets
+dry run complete; draft dryrun-707886c047 deleted
