@@ -1,0 +1,39 @@
+downloading uv 0.13.9 aarch64-apple-darwin
+installing to /Users/runner/.local/bin
+  uv
+  uvx
+everything's installed!
+ + shiboken6==6.11.2
+ + six==1.17.0
+ + tescope==0.2.0 (from file:///Users/runner/work/tescope-public/tescope-public)
+ + pyinstaller-hooks-contrib==2026.10
+ + setuptools==84.2.1
+77986 INFO: Building EXE from EXE-00.toc
+77989 INFO: Copying bootloader EXE to /Users/runner/work/tescope-public/tescope-public/packaging/build/tescope-gui/TEscope
+77993 INFO: Converting EXE to target arch (arm64)
+80029 INFO: Removing signature(s) from EXE
+80072 INFO: Modifying Mach-O image UUID(s) in EXE
+80094 INFO: Appending PKG archive to EXE
+80101 INFO: Fixing EXE headers for code signing
+80129 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (12.1.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+80130 INFO: Re-signing the EXE
+80192 INFO: Building EXE from EXE-00.toc completed successfully.
+80205 INFO: checking COLLECT
+80206 INFO: Building COLLECT because COLLECT-00.toc is non existent
+80206 INFO: Building COLLECT COLLECT-00.toc
+97261 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+97280 INFO: checking BUNDLE
+97280 INFO: Building BUNDLE because BUNDLE-00.toc is non existent
+97281 INFO: Building BUNDLE BUNDLE-00.toc
+105444 INFO: Signing the BUNDLE...
+107221 INFO: Building BUNDLE BUNDLE-00.toc completed successfully.
+107236 INFO: Build complete! The results are available in: /Users/runner/work/tescope-public/tescope-public/packaging/dist
+wrote packaging/dist/TEscope.app/Contents/Resources/THIRD-PARTY-NOTICES.txt (23 packages)
+Matplotlib is building the font cache; this may take a moment.
+frozen app start OK (platform: offscreen)
+total 165816
+drwxr-xr-x   4 runner  staff       128 Nov 23 09:15 .
+drwxr-xr-x  23 runner  staff       736 Nov 23 09:15 ..
+-rw-r--r--   1 runner  staff  71675450 Nov 23 09:15 TEscope-0.2.0-macos-arm64.zip
+-rw-r--r--   1 runner  staff        96 Nov 23 09:15 TEscope-0.2.0-macos-arm64.zip.sha256
+332b8041a54f60b734de28cc1a8b4805650e76b2a9933462e730be0b4c4273a4  TEscope-0.2.0-macos-arm64.zip
