@@ -1,0 +1,2 @@
+repeat_name	signal_name	copy_idx	chrom	peak_start	peak_end	cons_start	cons_end	peak_name	peak_score	peak_strand
+L1HS	H3K9me3 replicated peaks	4198635	chr6	67924063	67924251	1302	1309	Peak_127395	2.40655	.

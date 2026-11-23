@@ -1,0 +1,295 @@
+name: Package desktop apps
+
+# Packaging: builds unsigned PyInstaller bundles on all three OSes and the
+# Windows Inno Setup installer, then (job `release`) assembles ALL assets,
+# verifies them, and only then creates the GitHub release:
+#   - version tag  -> draft release with every asset -> verified -> published
+#   - ci-build/**  -> the same steps as a dry run (draft is deleted again)
+# so a release never exists with an incomplete asset set. Builds are
+# unsigned; signing/notarization is not part of this workflow.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+    branches: ["ci-build/**"]
+
+permissions:
+  contents: write  # release creation + log-publisher branches (see ci.yml)
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  bundle:
+    name: bundle / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh 2>&1 | tee -a joblog.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Linux Qt runtime libraries (needed to start the bundle on the runner)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update 2>&1 | tail -1 | tee -a joblog.txt
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon-x11-0 libxcb-icccm4 \
+            libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-shape0 \
+            libxcb-xinerama0 libxcb-cursor0 xvfb 2>&1 | tail -1 | tee -a joblog.txt
+      - name: Install uv (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          irm https://astral.sh/uv/install.ps1 | iex
+          Add-Content $env:GITHUB_PATH "$env:USERPROFILE\.local\bin"
+      - run: uv sync --extra gui 2>&1 | tail -3 | tee -a joblog.txt
+      - run: uv pip install pyinstaller 2>&1 | tail -2 | tee -a joblog.txt
+      - name: Build bundle
+        working-directory: packaging
+        run: uv run pyinstaller --noconfirm tescope-gui.spec 2>&1 | tail -20 | tee -a ../joblog.txt
+      - name: Collect third-party license notices into the bundle
+        run: |
+          TARGET=packaging/dist/TEscope
+          [ -d packaging/dist/TEscope.app ] && TARGET=packaging/dist/TEscope.app/Contents/Resources
+          uv run python packaging/collect_licenses.py "$TARGET/THIRD-PARTY-NOTICES.txt" 2>&1 | tee -a joblog.txt
+      - name: Verify Linux bundle vendors the Qt xcb helper libraries (R-002)
+        if: runner.os == 'Linux'
+        run: |
+          for lib in libxcb-cursor.so.0 libxkbcommon-x11.so.0 libxcb-icccm.so.4 \
+                     libxcb-image.so.0 libxcb-keysyms.so.1 libxcb-render-util.so.0; do
+            if [ ! -e "packaging/dist/TEscope/_internal/$lib" ]; then
+              echo "MISSING vendored $lib — bundle would fail on X11 hosts" | tee -a joblog.txt
+              exit 1
+            fi
+          done
+          echo "xcb helper libs vendored OK" | tee -a joblog.txt
+      - name: Smoke-test frozen app startup
+        # Linux runs under xvfb with the REAL xcb platform — offscreen-only
+        # smoke never exercised the xcb plugin of shipped bundles (R-002).
+        run: |
+          if [ -d packaging/dist/TEscope.app ]; then
+            BIN=packaging/dist/TEscope.app/Contents/MacOS/TEscope
+            export QT_QPA_PLATFORM=offscreen
+          elif [ -f packaging/dist/TEscope/TEscope.exe ]; then
+            BIN=packaging/dist/TEscope/TEscope.exe
+            export QT_QPA_PLATFORM=offscreen
+          else
+            BIN=packaging/dist/TEscope/TEscope
+            Xvfb :99 -screen 0 1280x900x24 >/dev/null 2>&1 &
+            export DISPLAY=:99
+            unset QT_QPA_PLATFORM
+            sleep 2
+          fi
+          "$BIN" >> joblog.txt 2>&1 & PID=$!
+          sleep 10
+          if kill -0 $PID 2>/dev/null; then
+            echo "frozen app start OK (platform: ${QT_QPA_PLATFORM:-xcb})" | tee -a joblog.txt; kill $PID
+          else
+            echo "frozen app exited early" | tee -a joblog.txt; exit 1
+          fi
+      - name: Build Windows installer (Inno Setup)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: packaging
+        run: |
+          # iscc output tee'd so a compile failure is visible in ci-results
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\iscc.exe" tescope.iss 2>&1 |
+            Tee-Object -Append -FilePath ../joblog.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-ChildItem Output | Tee-Object -Append -FilePath ../joblog.txt
+      - name: Execute installer + start installed app
+        # Automated non-interactive validation: actually RUNS setup.exe
+        # (silent, per-user) and starts the INSTALLED copy — distinct
+        # from the portable-tree smoke above and NOT a substitute for
+        # physical interactive validation (operator checklist).
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem packaging/Output/*-setup.exe | Select-Object -First 1
+          "executing installer: $($setup.Name) ($($setup.Length) bytes)" | Tee-Object -Append -FilePath joblog.txt
+          $p = Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-' -Wait -PassThru
+          "installer exit code: $($p.ExitCode)" | Tee-Object -Append -FilePath joblog.txt
+          if ($p.ExitCode -ne 0) { exit 1 }
+          $dir = "$env:LOCALAPPDATA\Programs\TEscope"
+          $exe = "$dir\TEscope.exe"
+          if (-not (Test-Path $exe)) {
+            "installed exe missing: $exe" | Tee-Object -Append -FilePath joblog.txt
+            Get-ChildItem "$env:LOCALAPPDATA\Programs" | Tee-Object -Append -FilePath joblog.txt
+            exit 1
+          }
+          $u = Test-Path "$dir\unins000.exe"
+          "installed exe present; uninstaller present: $u" | Tee-Object -Append -FilePath joblog.txt
+          $env:QT_QPA_PLATFORM = 'offscreen'
+          $app = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 12
+          if ($app.HasExited) {
+            "installed app exited early (code $($app.ExitCode))" | Tee-Object -Append -FilePath joblog.txt
+            exit 1
+          }
+          Stop-Process -Id $app.Id -Force
+          "installer executed + INSTALLED app start OK (offscreen; automated, not interactive)" | Tee-Object -Append -FilePath joblog.txt
+      - name: Create versioned distribution archives + checksums
+        id: dist
+        run: |
+          VER=$(uv run python -c "import tescope; print(tescope.__version__)")
+          ARCH=$(uname -m)
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            # build wheel/sdist BEFORE any archive exists in the tree so
+            # the sdist cannot swallow release-out (rc1 defect)
+            uv build 2>&1 | tail -2 | tee -a joblog.txt
+          fi
+          mkdir -p release-out
+          case "${{ runner.os }}" in
+            Linux)
+              tar -C packaging/dist -czf \
+                "release-out/TEscope-${VER}-linux-${ARCH}.tar.gz" TEscope ;;
+            macOS)
+              ditto -c -k --sequesterRsrc --keepParent \
+                packaging/dist/TEscope.app \
+                "release-out/TEscope-${VER}-macos-${ARCH}.zip" ;;
+            Windows)
+              cp packaging/Output/*.exe release-out/
+              ( cd packaging/dist && 7z a -tzip \
+                "../../release-out/TEscope-${VER}-windows-${ARCH}-portable.zip" \
+                TEscope >/dev/null ) ;;
+          esac
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            cp dist/*.whl dist/*.tar.gz release-out/ 2>/dev/null || true
+            # synthetic acceptance pack (self-consistent expected sums)
+            uv pip install pysam 2>&1 | tail -1 | tee -a joblog.txt
+            uv run python examples/make_acceptance_pack.py \
+              /tmp/acceptance-pack 2>&1 | tail -1 | tee -a joblog.txt
+            tar -C /tmp -czf \
+              "release-out/tescope-acceptance-pack-${VER}.tar.gz" \
+              acceptance-pack
+          fi
+          cd release-out
+          for f in *; do
+            case "${{ runner.os }}" in
+              macOS) shasum -a 256 "$f" > "$f.sha256" ;;
+              *) sha256sum "$f" > "$f.sha256" ;;
+            esac
+          done
+          ls -la | tee -a ../joblog.txt
+          cat *.sha256 | tee -a ../joblog.txt
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TEscope-${{ runner.os }}
+          path: release-out/*
+          if-no-files-found: error
+      - name: Publish job log
+        if: always()
+        env:
+          JOB_ID: bundle-${{ matrix.os }}
+          JOB_STATUS: ${{ job.status }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          PUB="$(mktemp -d)" && cd "$PUB"
+          git init -q -b log
+          git config user.name ci-log && git config user.email ci-log@local
+          echo "$JOB_STATUS" > status.txt
+          echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT workflow=$GITHUB_WORKFLOW job=$JOB_ID" > meta.txt
+          cp "$GITHUB_WORKSPACE/joblog.txt" log.txt 2>/dev/null || echo "(no log captured)" > log.txt
+          git add -A && git commit -qm "$JOB_ID: $JOB_STATUS"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/ci-results/${GITHUB_RUN_ID}/${JOB_ID}" || echo "log publish failed"
+
+  release:
+    name: release
+    needs: bundle
+    if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/ci-build/')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-in
+      - name: Assemble and verify the complete asset set
+        run: |
+          set -euo pipefail
+          mkdir release-out
+          find release-in -type f -exec mv {} release-out/ \;
+          VER=$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "v${VER}" != "${GITHUB_REF_NAME}" ]; then
+            echo "tag ${GITHUB_REF_NAME} does not match package version ${VER}" | tee -a joblog.txt; exit 1
+          fi
+          cd release-out
+          for f in "TEscope-${VER}-setup.exe" \
+                   "TEscope-${VER}-windows-x86_64-portable.zip" \
+                   "TEscope-${VER}-macos-arm64.zip" \
+                   "TEscope-${VER}-linux-x86_64.tar.gz" \
+                   "tescope-${VER}-py3-none-any.whl" \
+                   "tescope-${VER}.tar.gz" \
+                   "tescope-acceptance-pack-${VER}.tar.gz"; do
+            [ -s "$f" ] && [ -s "$f.sha256" ] || { echo "MISSING asset: $f" | tee -a ../joblog.txt; exit 1; }
+            sha256sum -c "$f.sha256" 2>&1 | tee -a ../joblog.txt
+          done
+          N=$(ls | wc -l)
+          [ "$N" -eq 14 ] || { echo "unexpected asset count $N" | tee -a ../joblog.txt; ls | tee -a ../joblog.txt; exit 1; }
+          sha256sum $(ls | grep -v '\.sha256$') > ../SHA256SUMS
+          mv ../SHA256SUMS .
+          {
+            echo "sha=$GITHUB_SHA ref=$GITHUB_REF run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT"
+            ls -l
+            cat SHA256SUMS
+          } | tee -a ../joblog.txt
+          echo "VER=$VER" >> "$GITHUB_ENV"
+      - name: Create draft release, upload, verify, publish (tags) or discard (dry run)
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="dryrun-${GITHUB_SHA::10}"
+          fi
+          case "$TAG" in
+            dryrun-*|*rc*) PRE="--prerelease" ;;
+            *)             PRE="" ;;
+          esac
+          {
+            echo "Built from commit ${GITHUB_SHA} by workflow run ${GITHUB_RUN_ID} (attempt ${GITHUB_RUN_ATTEMPT})."
+            echo "Builds are unsigned. Verify downloads with the .sha256 companions or SHA256SUMS."
+            echo
+            cat RELEASE_NOTES.md
+          } > notes.md
+          gh release create "$TAG" --draft $PRE --target "$GITHUB_SHA" \
+            --title "TEscope ${TAG}" --notes-file notes.md release-out/* 2>&1 | tee -a joblog.txt
+          COUNT=$(gh release view "$TAG" --json assets --jq '.assets | length')
+          echo "draft release $TAG holds $COUNT assets" | tee -a joblog.txt
+          [ "$COUNT" -eq 15 ] || { echo "asset count mismatch" | tee -a joblog.txt; exit 1; }
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            gh release edit "$TAG" --draft=false 2>&1 | tee -a joblog.txt
+            echo "release $TAG PUBLISHED" | tee -a joblog.txt
+          else
+            gh release delete "$TAG" --yes 2>&1 | tee -a joblog.txt
+            echo "dry run complete; draft $TAG deleted" | tee -a joblog.txt
+          fi
+      - name: Publish job log
+        if: always()
+        env:
+          JOB_ID: release
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          set +e
+          PUB="$(mktemp -d)" && cd "$PUB"
+          git init -q -b log
+          git config user.name ci-log && git config user.email ci-log@local
+          echo "$JOB_STATUS" > status.txt
+          echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT workflow=$GITHUB_WORKFLOW job=$JOB_ID" > meta.txt
+          cp "$GITHUB_WORKSPACE/joblog.txt" log.txt 2>/dev/null || echo "(no log captured)" > log.txt
+          git add -A && git commit -qm "$JOB_ID: $JOB_STATUS"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/ci-results/${GITHUB_RUN_ID}/${JOB_ID}" || echo "log publish failed"

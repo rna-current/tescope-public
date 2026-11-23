@@ -1,0 +1,122 @@
+tescope_version: 0.1.0
+assembly: hg38
+repeat:
+  name: L1HS
+filters:
+  min_genome_length: null
+  min_consensus_coverage: null
+  completeness: []
+  end_tolerance_frac: 0.05
+  end_tolerance_bp: 20
+  include_secondary: true
+  strands: []
+tracks:
+- file: data/ENCFF601JGK.bigWig
+  name: H3K9me3 fold change
+  kind: ''
+  format: ''
+  sample: ''
+  group: ''
+  replicate: null
+  strand: null
+  visible: true
+  color: ''
+  min_mapq: 0
+  exclude_duplicates: true
+  mapping_class: ''
+  mapping_method: nh
+  unique_mapq: 30
+- file: data/ENCFF963GZJ.bed.gz
+  name: H3K9me3 replicated peaks
+  kind: interval
+  format: narrowpeak
+  sample: ''
+  group: ''
+  replicate: null
+  strand: null
+  visible: true
+  color: ''
+  min_mapq: 0
+  exclude_duplicates: true
+  mapping_class: ''
+  mapping_method: nh
+  unique_mapq: 30
+aggregation:
+  bin_size: 50
+  statistic: mean
+plot:
+  show_sem: true
+  y_axis: independent
+  normalization: none
+  show_replicates: false
+  dpi: 300
+output:
+  dir: results/all
+  table_formats:
+  - tsv
+  figure_formats:
+  - png
+  - svg
+  - pdf
+annotations:
+  enabled: false
+  provider: dfam
+  user_features: []
+  user_features_file: ''
+  show_in_plots: true
+  required: false
+sequence:
+  enabled: false
+  source: dfam
+  path: ''
+  family: ''
+  library_name: ''
+  show_track: true
+style:
+  preset: publication
+  palette: default
+  fig_width_cm: 0.0
+  fig_height_cm: 0.0
+  title_size: 0.0
+  label_size: 0.0
+  tick_size: 0.0
+  legend_size: 0.0
+  annotation_size: 0.0
+  title: ''
+  x_label: ''
+  y_label: ''
+  show_legend: true
+  legend_position: upper right
+  show_grid: false
+  grid_alpha: 0.3
+  y_min: null
+  y_max: null
+  x_min: null
+  x_max: null
+  line_width: 0.0
+  series: {}
+  representation: line
+  fill_alpha: 0.15
+  smoothing_method: none
+  smoothing_window: 5
+  smoothing_sigma: 2.0
+  smoothing_polyorder: 2
+  smoothing_show_raw: true
+  band: sem
+  outer_band: true
+  annotation_shading: false
+  annotation_shading_alpha: 0.08
+  fragment_panels: true
+  band_alpha: 0.2
+  annotation_alpha: 1.0
+  annotation_border_width: 0.8
+  database_lane_color: ''
+  user_lane_color: ''
+  heatmap_cmap: viridis
+  heatmap_vmin: null
+  heatmap_vmax: null
+  heatmap_colorbar: true
+  heatmap_sort: cons_start
+  heatmap_show_profile: false
+chrom_alias: true
+annotation_provenance: {}

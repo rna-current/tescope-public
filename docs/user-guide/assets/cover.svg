@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 794 1123" width="794" height="1123">
+
+  <rect width="794" height="1123" fill="#FFFFFF"/>
+  <g transform="translate(217.0 165.0) scale(1.19205)">
+
+  <!-- TEscope lockup master (adopted concept B "profile lens",
+       2026-10-01): metagene profile over a consensus bar and fragment
+       inside the lens ring. Vector-native authored master. -->
+  <g transform="translate(4 4)">
+  <circle cx="32" cy="32" r="26" fill="#F4F9FD" stroke="#0072B2" stroke-width="5"/>
+  <path d="M16 36 C20 36 20 19 25.5 19 S31.5 36 36.5 36 S43 31 48 32.5"
+        fill="none" stroke="#D55E00" stroke-width="3.4" stroke-linecap="round"/>
+  <rect x="16" y="41" width="32" height="4.4" rx="2.2" fill="#3C5991"/>
+  <rect x="22" y="48.5" width="15" height="3.6" rx="1.8" fill="#8FB0DC"/>
+  </g>
+  <text x="84" y="47" font-family="Arial, 'Liberation Sans', Helvetica, sans-serif"
+        font-size="34" font-weight="bold" fill="#3C5991"
+        letter-spacing="0.5">TE<tspan fill="#0072B2">scope</tspan></text>
+
+  </g>
+  <g font-family="'Liberation Sans', Helvetica, Arial, sans-serif"
+     text-anchor="middle">
+    <text x="397.0" y="470" font-size="40" font-weight="bold"
+          fill="#3C5991">TEscope User Guide</text>
+    <text x="397.0" y="512" font-size="17" fill="#5A6472">
+      Fragment-aware consensus-coordinate profiling of
+    </text>
+    <text x="397.0" y="536" font-size="17" fill="#5A6472">
+      transposable-element signals
+    </text>
+    <line x1="277.0" y1="580" x2="517.0" y2="580"
+          stroke="#C9D2DE" stroke-width="1"/>
+    <text x="397.0" y="625" font-size="14" fill="#5A6472">
+      For installation, usage, and reproducibility guidance
+    </text>
+    <text x="397.0" y="1020" font-size="12" fill="#5A6472">
+      TEscope 0.2.0
+    </text>
+    <text x="397.0" y="1042" font-size="12" fill="#5A6472">
+      https://github.com/rna-current/tescope-public
+    </text>
+  </g>
+</svg>

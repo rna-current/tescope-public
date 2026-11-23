@@ -1,0 +1,87 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tescope"
+version = "0.2.0"
+description = "Fragment-aware visualization and aggregation of genomic signals on transposable element consensus coordinates"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Hongseok Ha" }]
+keywords = [
+    "transposable-elements",
+    "repeatmasker",
+    "metagene",
+    "bioinformatics",
+    "genomics",
+    "visualization",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+# Dependency policy: see docs/dependencies.md for purpose/license/version notes.
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "pyyaml>=6.0",
+    "click>=8.1",
+    "matplotlib>=3.7",
+    "platformdirs>=3.0",
+    # bigWig backends: pybigtools ships wheels for Linux/macOS/Windows
+    # (incl. arm64) and is the portable backend; pyBigWig publishes only
+    # manylinux wheels, so it is a Linux-only additional backend (building
+    # its sdist on macOS CI is fragile). The reader abstraction in
+    # tescope.core.tracks.bigwig uses whichever is importable, and tests
+    # assert numeric parity between backends.
+    'pyBigWig>=0.3.22; sys_platform == "linux"',
+    "pybigtools>=0.2.4",
+]
+
+[project.optional-dependencies]
+gui = ["PySide6>=6.6"]
+bam = ['pysam>=0.22; platform_system != "Windows"']
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+tescope = "tescope.cli.main:cli"
+
+[project.gui-scripts]
+tescope-gui = "tescope.gui.app:main"
+
+# keep in sync with README.md, CITATION.cff, packaging/tescope.iss.
+[project.urls]
+Homepage = "https://github.com/rna-current/tescope-public"
+Documentation = "https://github.com/rna-current/tescope-public/tree/main/docs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tescope"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501", "B905", "B007"]
