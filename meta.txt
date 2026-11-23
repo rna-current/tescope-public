@@ -1,0 +1,1 @@
+sha=707886c0476f3f223a009391744b303d090778aa ref=refs/tags/v0.2.0 event=push run=45144998110 attempt=1 workflow=Package desktop apps job=bundle-windows-latest
