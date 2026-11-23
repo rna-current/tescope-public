@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use TEscope, please cite it using this metadata."
+type: software
+title: "TEscope"
+abstract: "Fragment-aware visualization and aggregation of genomic signals on transposable element consensus coordinates."
+authors:
+  - family-names: "Ha"
+    given-names: "Hongseok"
+    orcid: "https://orcid.org/0000-0002-0923-9187"
+    affiliation: "Department of Genomic Medicine, Biomedical Research Institute, Seoul National University Hospital, Seoul National University College of Medicine, Seoul, Republic of Korea"
+version: 0.2.0
+date-released: "2026-11-23"
+doi: 10.5281/zenodo.24458256
+license: MIT
+repository-code: "https://github.com/rna-current/tescope-public"
+keywords:
+  - transposable elements
+  - RepeatMasker
+  - metagene
+  - genomics

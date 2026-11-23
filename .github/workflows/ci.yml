@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# contents:write is needed by the log-publisher step, which pushes each
+# job's captured log + status to a ci-results/<run_id>/<job> branch so CI
+# outcomes are inspectable from environments with git-only access.
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.12"]
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh 2>&1 | tee -a joblog.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install uv (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          irm https://astral.sh/uv/install.ps1 | iex
+          Add-Content $env:GITHUB_PATH "$env:USERPROFILE\.local\bin"
+      - name: Install (core + bam extra on POSIX)
+        if: runner.os != 'Windows'
+        run: uv sync --extra bam 2>&1 | tee -a joblog.txt
+      - name: Install (core; pysam unavailable on Windows)
+        if: runner.os == 'Windows'
+        run: uv sync 2>&1 | tee -a joblog.txt
+      - name: Unit + golden tests (headless)
+        run: uv run pytest tests -x -q --ignore=tests/unit/test_gui.py --ignore=tests/unit/test_theme.py 2>&1 | tee -a joblog.txt
+      - name: CLI smoke (headless execution)
+        run: |
+          uv run tescope --version 2>&1 | tee -a joblog.txt
+          uv run tescope reference list 2>&1 | tee -a joblog.txt
+      - name: Publish job log
+        if: always()
+        env:
+          JOB_ID: test-${{ matrix.os }}-py${{ matrix.python }}
+          JOB_STATUS: ${{ job.status }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          PUB="$(mktemp -d)" && cd "$PUB"
+          git init -q -b log
+          git config user.name ci-log && git config user.email ci-log@local
+          echo "$JOB_STATUS" > status.txt
+          echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT workflow=$GITHUB_WORKFLOW job=$JOB_ID" > meta.txt
+          cp "$GITHUB_WORKSPACE/joblog.txt" log.txt 2>/dev/null || echo "(no log captured)" > log.txt
+          git add -A && git commit -qm "$JOB_ID: $JOB_STATUS"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/ci-results/${GITHUB_RUN_ID}/${JOB_ID}" || echo "log publish failed"
+
+  gui-smoke:
+    name: GUI smoke / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh 2>&1 | tee -a joblog.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install uv (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          irm https://astral.sh/uv/install.ps1 | iex
+          Add-Content $env:GITHUB_PATH "$env:USERPROFILE\.local\bin"
+      - name: Linux Qt runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update 2>&1 | tail -1 | tee -a joblog.txt
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon-x11-0 libxcb-icccm4 \
+            libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-shape0 \
+            libxcb-xinerama0 libxcb-cursor0 2>&1 | tail -1 | tee -a joblog.txt
+      - run: uv sync --extra gui 2>&1 | tee -a joblog.txt
+      - name: Offscreen GUI + theme tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: uv run pytest tests/unit/test_gui.py tests/unit/test_theme.py -q 2>&1 | tee -a joblog.txt
+        # NOTE: offscreen tests verify wiring, not real usability.
+        # Real-device GUI validation on Windows/macOS is required before
+        # release (docs/limitations.md).
+      - name: Publish job log
+        if: always()
+        env:
+          JOB_ID: gui-${{ matrix.os }}
+          JOB_STATUS: ${{ job.status }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          PUB="$(mktemp -d)" && cd "$PUB"
+          git init -q -b log
+          git config user.name ci-log && git config user.email ci-log@local
+          echo "$JOB_STATUS" > status.txt
+          echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT workflow=$GITHUB_WORKFLOW job=$JOB_ID" > meta.txt
+          cp "$GITHUB_WORKSPACE/joblog.txt" log.txt 2>/dev/null || echo "(no log captured)" > log.txt
+          git add -A && git commit -qm "$JOB_ID: $JOB_STATUS"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/ci-results/${GITHUB_RUN_ID}/${JOB_ID}" || echo "log publish failed"
+
+  package:
+    name: Build wheel/sdist
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh 2>&1 | tee -a joblog.txt
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: uv build 2>&1 | tee -a joblog.txt
+      - name: Wheel installs and imports cleanly
+        run: |
+          uv venv /tmp/wheeltest 2>&1 | tee -a joblog.txt
+          uv pip install --python /tmp/wheeltest dist/*.whl 2>&1 | tail -2 | tee -a joblog.txt
+          /tmp/wheeltest/bin/python -c "import tescope; print(tescope.__version__)" 2>&1 | tee -a joblog.txt
+          /tmp/wheeltest/bin/tescope --version 2>&1 | tee -a joblog.txt
+      - uses: actions/upload-artifact@v4
+        # Auxiliary only: Actions artifact storage has a standing quota
+        # problem; distribution uses tag-build release
+        # assets (package-apps.yml). Build+install-test above stay fatal.
+        continue-on-error: true
+        with:
+          name: dist
+          path: dist/
+      - name: Publish job log
+        if: always()
+        env:
+          JOB_ID: package
+          JOB_STATUS: ${{ job.status }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          PUB="$(mktemp -d)" && cd "$PUB"
+          git init -q -b log
+          git config user.name ci-log && git config user.email ci-log@local
+          echo "$JOB_STATUS" > status.txt
+          echo "sha=$GITHUB_SHA ref=$GITHUB_REF event=$GITHUB_EVENT_NAME run=$GITHUB_RUN_ID attempt=$GITHUB_RUN_ATTEMPT workflow=$GITHUB_WORKFLOW job=$JOB_ID" > meta.txt
+          cp "$GITHUB_WORKSPACE/joblog.txt" log.txt 2>/dev/null || echo "(no log captured)" > log.txt
+          git add -A && git commit -qm "$JOB_ID: $JOB_STATUS"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "HEAD:refs/heads/ci-results/${GITHUB_RUN_ID}/${JOB_ID}" || echo "log publish failed"

@@ -1,0 +1,37 @@
+section	metric	value
+analysis	assembly	hg38
+analysis	repeat_name	L1HS
+analysis	consensus_length_bp	6155
+analysis	bin_size_bp	50
+analysis	n_bins	124
+annotation	source	ucsc-goldenpath
+annotation	source_url_or_path	https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.out.gz
+annotation	retrieved_at	2026-08-27T08:55:47+00:00
+annotation	md5	820796b72974d077281b3386c4fb8295
+filtering	All copies	1661
+filtering	Filtered out	0
+completeness	five_prime_truncated	803
+completeness	internal_fragment	389
+completeness	full_length	321
+completeness	three_prime_truncated	148
+strand	copies on -	857
+strand	copies on +	804
+consensus coverage	max elements per bin	1096
+consensus coverage	min elements per bin	74
+consensus coverage	median elements per bin	539.5
+consensus coverage	fraction of bins covered by >=1 element	1.000
+tracks	n_tracks	2
+track: H3K9me3 fold change	kind	continuous
+track: H3K9me3 fold change	file	data/ENCFF601JGK.bigWig
+track: H3K9me3 fold change	chromosomes	155 chromosomes matched; 1 track chromosomes not in reference (e.g. chrEBV)
+track: H3K9me3 fold change	mapping policy	unavailable from track (pre-aggregated signal; no read-level information)
+track: H3K9me3 fold change	copies skipped (chromosome absent)	44
+track: H3K9me3 fold change	signal missingness (covered bins without data)	0.001
+track: H3K9me3 replicated peaks	kind	interval
+track: H3K9me3 replicated peaks	file	data/ENCFF963GZJ.bed.gz
+track: H3K9me3 replicated peaks	chromosomes	23 chromosomes matched
+track: H3K9me3 replicated peaks	peaks in file	25513
+track: H3K9me3 replicated peaks	projected (copy, peak) pairs	1
+track: H3K9me3 replicated peaks	TE copies with >=1 peak	1
+warnings	warning 1	25 L1HS hits excluded: consensus coordinates exceed the model length (6155 bp) — annotation artifact.
+warnings	warning 2	Track 'H3K9me3 fold change': 44 TE copies skipped (chromosome absent from track).

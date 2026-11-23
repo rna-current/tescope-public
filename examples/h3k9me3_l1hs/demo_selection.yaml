@@ -1,0 +1,43 @@
+schema: tescope-locus-selection/1
+assembly: hg38
+repeat: L1HS
+coordinates: 0-based half-open
+annotation_provenance:
+  assembly: hg38
+  source: ucsc-goldenpath
+  source_url: https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.out.gz
+  source_path: <TESCOPE_CACHE_DIR>/references/hg38/source/hg38.fa.out.gz
+  source_format: repeatmasker-out
+  retrieved_at: '2026-08-27T08:55:47+00:00'
+  source_version: ''
+  md5: 820796b72974d077281b3386c4fb8295
+  notes: ''
+  extra:
+    n_hits: 5519906
+    n_malformed_lines: 212
+    tescope_version: 0.1.0
+n_eligible_at_export: 1661
+selection_criterion: top 20 full_length copies by 'mean_H3K9me3 fold change' (mean
+  over observed consensus bins, loci.tsv); exploratory workflow demonstration, not
+  a confirmatory finding
+locus_ids:
+- chr3:26036528-26042769(-)
+- chr5:119599331-119605464(+)
+- chr5:81616090-81622140(+)
+- chr11:125536609-125542640(+)
+- chr3:120573021-120579186(+)
+- chr4:91437491-91443691(+)
+- chr13:92685561-92691592(-)
+- chr7:141062014-141068042(-)
+- chr7:91173443-91179517(+)
+- chr2:197062486-197068374(+)
+- chr5:153070982-153077008(-)
+- chr1:197707714-197713746(+)
+- chr7:7465092-7471120(+)
+- chr18:535701-541755(+)
+- chr4:169515501-169521532(-)
+- chr8:104739851-104745873(-)
+- chr4:98592435-98598463(-)
+- chr12:101146043-101152064(+)
+- chr11:82155865-82161891(+)
+- chr2:160114516-160120680(+)
