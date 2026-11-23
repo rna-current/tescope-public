@@ -88,9 +88,9 @@ the validation scope of each), or install the Python package from the
 wheel attached to the same release:
 
 ```bash
-pip install tescope-0.2.0-py3-none-any.whl            # core + CLI
-pip install "tescope-0.2.0-py3-none-any.whl[gui]"     # with the desktop GUI
-pip install "tescope-0.2.0-py3-none-any.whl[bam]"     # BAM coverage (Linux/macOS)
+pip install tescope-0.2.1-py3-none-any.whl            # core + CLI
+pip install "tescope-0.2.1-py3-none-any.whl[gui]"     # with the desktop GUI
+pip install "tescope-0.2.1-py3-none-any.whl[bam]"     # BAM coverage (Linux/macOS)
 ```
 
 Every release asset has a `.sha256` companion
@@ -159,9 +159,9 @@ TEscope. See `docs/reference-data.md` for provenance and licensing notes.
 
 ## Citation
 
-Please cite the archived release you used. Version 0.2.0:
+Please cite the archived release you used. Version 0.2.1:
 
-> Ha, H. (2026). TEscope (v0.2.0). Zenodo. https://doi.org/10.5281/zenodo.24458256
+> Ha, H. (2026). TEscope (v0.2.1). Zenodo. https://doi.org/10.5281/zenodo.24458256
 
 Machine-readable metadata: [`CITATION.cff`](CITATION.cff). Report the
 exact version (`tescope --version`) with any TEscope-derived figure.

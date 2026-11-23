@@ -2,6 +2,12 @@
 
 TEscope follows [semantic versioning](https://semver.org).
 
+## [0.2.1] — 2026-11-23
+
+Packaging fix, no application change: the Linux bundle is built on a
+pinned image (glibc 2.39) and the build now checks that requirement.
+The 0.2.0 Linux bundle required glibc 2.43 and should not be used.
+
 ## [0.2.0] — 2026-11-23
 
 First public release. Adds the Loci tab and Locus Inspector, explicit
