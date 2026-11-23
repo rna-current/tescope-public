@@ -35,7 +35,7 @@ three OSes on tag push or manual dispatch.
 - **Primary channel: wheels/source** (`pip/pipx/uv tool install tescope`)
   — broad Linux compatibility via manylinux dependency wheels.
 - **Prebuilt Linux bundle: convenience artifact only**, for distributions
-  with glibc **>= the build host's glibc**. CI builds on ubuntu-latest
+  with glibc **>= the build host's glibc**. CI builds on a pinned ubuntu-24.04 image
   (24.04, glibc 2.39): compatible in principle with Ubuntu 24.04+,
   RHEL/Rocky **10**+ (glibc 2.39), Fedora 40+; **not** RHEL/Rocky 9
   (2.34) or Ubuntu 22.04 (2.35). PyInstaller Linux binaries are not

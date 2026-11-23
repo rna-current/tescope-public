@@ -7,8 +7,8 @@ Three independent levels, from fastest to most complete.
 No network and no reference data needed.
 
 ```bash
-pip install tescope-0.2.0-py3-none-any.whl
-tar xzf tescope-acceptance-pack-0.2.0.tar.gz && cd acceptance-pack
+pip install tescope-0.2.1-py3-none-any.whl
+tar xzf tescope-acceptance-pack-0.2.1.tar.gz && cd acceptance-pack
 python verify.py          # every canonical table must match its recorded checksum
 ```
 

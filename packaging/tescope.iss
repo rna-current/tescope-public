@@ -11,7 +11,7 @@
 ; signing is a release-phase operator action).
 
 #define AppName "TEscope"
-#define AppVersion "0.2.0"
+#define AppVersion "0.2.1"
 #define AppPublisher "TEscope project"
 #define AppURL "https://github.com/rna-current/tescope-public"
 

@@ -4,7 +4,9 @@ name: Package desktop apps
 # Windows Inno Setup installer, then (job `release`) assembles ALL assets,
 # verifies them, and only then creates the GitHub release:
 #   - version tag  -> draft release with every asset -> verified -> published
-#   - ci-build/**  -> the same steps as a dry run (draft is deleted again)
+#   - ci-build/**  -> the same steps, published as a clearly labelled
+#     pre-release `dryrun-<sha>` so the bytes can be tested before tagging;
+#     dry-run releases and their tags are removed by the next tag build
 # so a release never exists with an incomplete asset set. Builds are
 # unsigned; signing/notarization is not part of this workflow.
 
@@ -28,7 +30,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Linux is pinned: the bundle vendors system libraries of the build
+        # host, so its minimum glibc is the runner's (ubuntu-24.04 = 2.39).
+        # v0.2.0 was built on ubuntu-latest after that label had moved to a
+        # newer image and required glibc 2.43 (see packaging/errata/v0.2.0.md).
+        os: [ubuntu-24.04, windows-latest, macos-latest]
     env:
       UV_PYTHON: "3.12"
     steps:
@@ -72,6 +78,16 @@ jobs:
             fi
           done
           echo "xcb helper libs vendored OK" | tee -a joblog.txt
+      - name: Verify the Linux bundle's glibc requirement (documented minimum 2.39)
+        if: runner.os == 'Linux'
+        run: |
+          MAX=$(find packaging/dist/TEscope -type f \( -name '*.so*' -o -name TEscope \) \
+                  -exec objdump -T {} + 2>/dev/null | grep -o 'GLIBC_2\.[0-9]*' \
+                  | sort -t. -k2 -n -u | tail -1)
+          echo "max glibc symbol version required by the bundle: $MAX; build host: $(ldd --version | head -1)" | tee -a joblog.txt
+          if [ "$(echo "$MAX" | cut -d. -f2)" -gt 39 ]; then
+            echo "bundle would not start on glibc 2.39 hosts" | tee -a joblog.txt; exit 1
+          fi
       - name: Smoke-test frozen app startup
         # Linux runs under xvfb with the REAL xcb platform — offscreen-only
         # smoke never exercised the xcb plugin of shipped bundles (R-002).
@@ -209,7 +225,7 @@ jobs:
     name: release
     needs: bundle
     if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/ci-build/')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -247,13 +263,13 @@ jobs:
             cat SHA256SUMS
           } | tee -a ../joblog.txt
           echo "VER=$VER" >> "$GITHUB_ENV"
-      - name: Create draft release, upload, verify, publish (tags) or discard (dry run)
+      - name: Create draft release, upload, verify, publish
         run: |
           set -euo pipefail
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            TAG="${GITHUB_REF_NAME}"
+            TAG="${GITHUB_REF_NAME}"; TITLE="TEscope ${TAG}"
           else
-            TAG="dryrun-${GITHUB_SHA::10}"
+            TAG="dryrun-${GITHUB_SHA::10}"; TITLE="DRY RUN ${GITHUB_SHA::10} — not a release, do not use"
           fi
           case "$TAG" in
             dryrun-*|*rc*) PRE="--prerelease" ;;
@@ -266,17 +282,33 @@ jobs:
             cat RELEASE_NOTES.md
           } > notes.md
           gh release create "$TAG" --draft $PRE --target "$GITHUB_SHA" \
-            --title "TEscope ${TAG}" --notes-file notes.md release-out/* 2>&1 | tee -a joblog.txt
+            --title "$TITLE" --notes-file notes.md release-out/* 2>&1 | tee -a joblog.txt
           COUNT=$(gh release view "$TAG" --json assets --jq '.assets | length')
           echo "draft release $TAG holds $COUNT assets" | tee -a joblog.txt
           [ "$COUNT" -eq 15 ] || { echo "asset count mismatch" | tee -a joblog.txt; exit 1; }
-          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
-            gh release edit "$TAG" --draft=false 2>&1 | tee -a joblog.txt
-            echo "release $TAG PUBLISHED" | tee -a joblog.txt
-          else
-            gh release delete "$TAG" --yes 2>&1 | tee -a joblog.txt
-            echo "dry run complete; draft $TAG deleted" | tee -a joblog.txt
-          fi
+          gh release edit "$TAG" --draft=false 2>&1 | tee -a joblog.txt
+          echo "release $TAG PUBLISHED" | tee -a joblog.txt
+      - name: Remove dry-run releases and apply errata to earlier releases (tag builds)
+        if: github.ref_type == 'tag'
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          for t in $(gh release list --limit 100 --json tagName --jq '.[].tagName' | grep '^dryrun-' || true); do
+            gh release delete "$t" --yes --cleanup-tag 2>&1 | tee -a joblog.txt
+            echo "removed dry-run release $t" | tee -a joblog.txt
+          done
+          # packaging/errata/<tag>.md is prepended once to that release's notes
+          for f in packaging/errata/v*.md; do
+            [ -f "$f" ] || continue
+            t=$(basename "$f" .md)
+            gh release view "$t" >/dev/null 2>&1 || continue
+            gh release view "$t" --json body --jq .body > old_body.md
+            if ! grep -qF "$(head -1 "$f")" old_body.md; then
+              { cat "$f"; echo; cat old_body.md; } > new_body.md
+              gh release edit "$t" --notes-file new_body.md 2>&1 | tee -a joblog.txt
+              echo "erratum applied to release $t" | tee -a joblog.txt
+            fi
+          done
       - name: Publish job log
         if: always()
         env:

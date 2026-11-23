@@ -5,7 +5,7 @@
 
 # TEscope User Guide
 
-Complete guide to TEscope **0.2.0**. Three parts, in reading order:
+Complete guide to TEscope **0.2.1**. Three parts, in reading order:
 
 1. **Quick start** (below) — first analysis in five minutes.
 2. [**Complete control reference**](reference.md) — every menu item,
