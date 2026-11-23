@@ -1,0 +1,55 @@
+downloading uv 0.13.9 x86_64-unknown-linux-gnu
+installing to /home/runner/.local/bin
+  uv
+  uvx
+everything's installed!
+Reading package lists...
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+ + shiboken6==6.11.2
+ + six==1.17.0
+ + tescope==0.2.1 (from file:///home/runner/work/tescope-public/tescope-public)
+ + pyinstaller-hooks-contrib==2026.10
+ + setuptools==84.2.1
+26712 INFO: checking PYZ
+26712 INFO: Building PYZ because PYZ-00.toc is non existent
+26712 INFO: Building PYZ (ZlibArchive) /home/runner/work/tescope-public/tescope-public/packaging/build/tescope-gui/PYZ-00.pyz
+27832 INFO: Building PYZ (ZlibArchive) /home/runner/work/tescope-public/tescope-public/packaging/build/tescope-gui/PYZ-00.pyz completed successfully.
+27853 INFO: checking PKG
+27853 INFO: Building PKG because PKG-00.toc is non existent
+27853 INFO: Building PKG (CArchive) TEscope.pkg
+27866 INFO: Building PKG (CArchive) TEscope.pkg completed successfully.
+27866 INFO: Bootloader /home/runner/work/tescope-public/tescope-public/.venv/lib/python3.12/site-packages/PyInstaller/bootloader/Linux-64bit-intel/run
+27866 INFO: checking EXE
+27867 INFO: Building EXE because EXE-00.toc is non existent
+27867 INFO: Building EXE from EXE-00.toc
+27867 INFO: Copying bootloader EXE to /home/runner/work/tescope-public/tescope-public/packaging/build/tescope-gui/TEscope
+27867 INFO: Appending PKG archive to custom ELF section in EXE
+27927 INFO: Building EXE from EXE-00.toc completed successfully.
+27932 INFO: checking COLLECT
+27932 INFO: Building COLLECT because COLLECT-00.toc is non existent
+27932 INFO: Building COLLECT COLLECT-00.toc
+28843 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+28849 INFO: Build complete! The results are available in: /home/runner/work/tescope-public/tescope-public/packaging/dist
+wrote packaging/dist/TEscope/THIRD-PARTY-NOTICES.txt (23 packages)
+xcb helper libs vendored OK
+max glibc symbol version required by the bundle: GLIBC_2.38; build host: ldd (Ubuntu GLIBC 2.39-0ubuntu8.12) 2.39
+frozen app start OK (platform: xcb)
+Successfully built dist/tescope-0.2.1.tar.gz
+Successfully built dist/tescope-0.2.1-py3-none-any.whl
+ + pysam==0.24.1
+acceptance pack built: /tmp/acceptance-pack (16 expected tables; 4.7 MB)
+total 123420
+drwxr-xr-x  2 runner runner      4096 Nov 23 09:37 .
+drwxr-xr-x 14 runner runner      4096 Nov 23 09:37 ..
+-rw-r--r--  1 runner runner 121144356 Nov 23 09:37 TEscope-0.2.1-linux-x86_64.tar.gz
+-rw-r--r--  1 runner runner       100 Nov 23 09:37 TEscope-0.2.1-linux-x86_64.tar.gz.sha256
+-rw-r--r--  1 runner runner    251737 Nov 23 09:37 tescope-0.2.1-py3-none-any.whl
+-rw-r--r--  1 runner runner        97 Nov 23 09:37 tescope-0.2.1-py3-none-any.whl.sha256
+-rw-r--r--  1 runner runner   2956210 Nov 23 09:37 tescope-0.2.1.tar.gz
+-rw-r--r--  1 runner runner        87 Nov 23 09:37 tescope-0.2.1.tar.gz.sha256
+-rw-r--r--  1 runner runner   1995737 Nov 23 09:37 tescope-acceptance-pack-0.2.1.tar.gz
+-rw-r--r--  1 runner runner       103 Nov 23 09:37 tescope-acceptance-pack-0.2.1.tar.gz.sha256
+93e7c59ad748ddae7b045424462d148a07ea0778fec080fcc173b78809708c80  TEscope-0.2.1-linux-x86_64.tar.gz
+86a9bf405a83944058d8257de720586f03163f8132c57a5ab1e72423a9249853  tescope-0.2.1-py3-none-any.whl
+3982e750c8e980fba40b8bd12f23152a9c7ac2a95c803925d70f93b8875c535f  tescope-0.2.1.tar.gz
+1101a1674935466e057ac05cf96b957aecefc295228537614ee21265e0c3d391  tescope-acceptance-pack-0.2.1.tar.gz
