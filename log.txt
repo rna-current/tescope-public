@@ -1,0 +1,68 @@
+downloading uv 0.13.9 x86_64-unknown-linux-gnu
+installing to /home/runner/.local/bin
+  uv
+  uvx
+everything's installed!
+Reading package lists...
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+Downloading cpython-3.12.16-linux-x86_64-gnu (download) (33.1MiB)
+ Downloaded cpython-3.12.16-linux-x86_64-gnu (download)
+Using CPython 3.12.16
+Creating virtual environment at: .venv
+Resolved 41 packages in 0.93ms
+   Building tescope @ file:///home/runner/work/tescope-public/tescope-public
+Downloading kiwisolver (1.4MiB)
+Downloading pyside6-essentials (76.4MiB)
+Downloading pyside6-addons (167.0MiB)
+Downloading numpy (15.9MiB)
+Downloading fonttools (4.8MiB)
+Downloading ruff (9.8MiB)
+Downloading matplotlib (9.6MiB)
+Downloading pygments (1.2MiB)
+Downloading pandas (10.5MiB)
+Downloading pillow (6.6MiB)
+Downloading pybigtools (1.5MiB)
+ Downloaded pygments
+ Downloaded kiwisolver
+ Downloaded pybigtools
+ Downloaded fonttools
+ Downloaded pillow
+ Downloaded ruff
+ Downloaded matplotlib
+ Downloaded numpy
+ Downloaded pandas
+      Built tescope @ file:///home/runner/work/tescope-public/tescope-public
+ Downloaded pyside6-essentials
+ Downloaded pyside6-addons
+Prepared 29 packages in 6.47s
+Installed 29 packages in 149ms
+ + click==8.5.0
+ + contourpy==1.3.3
+ + coverage==7.15.4
+ + cycler==0.12.1
+ + fonttools==4.63.0
+ + iniconfig==2.3.0
+ + kiwisolver==1.5.0
+ + matplotlib==3.11.1
+ + numpy==2.5.2
+ + packaging==26.3
+ + pandas==3.0.5
+ + pillow==12.3.0
+ + platformdirs==4.11.4
+ + pluggy==1.6.0
+ + pybigtools==0.3.0
+ + pybigwig==0.3.25
+ + pygments==2.21.0
+ + pyparsing==3.3.2
+ + pyside6==6.11.2
+ + pyside6-addons==6.11.2
+ + pyside6-essentials==6.11.2
+ + pytest==9.1.1
+ + pytest-cov==7.1.0
+ + python-dateutil==2.9.0.post0
+ + pyyaml==6.0.3
+ + ruff==0.16.4
+ + shiboken6==6.11.2
+ + six==1.17.0
+ + tescope==0.2.1 (from file:///home/runner/work/tescope-public/tescope-public)
+................ss...................                                    [100%]
