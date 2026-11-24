@@ -7,6 +7,7 @@ displays the returned result.
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 from PySide6.QtCore import Qt
@@ -142,6 +143,10 @@ class MainWindow(QMainWindow):
             self._update_sequence_status)
         self._current_cons_length = 0
         self._plot_style = None  # persists Style-dialog edits across runs
+        # project settings that have no GUI control (aggregation, output,
+        # chromosome-alias policy, export dpi): kept from the opened
+        # project so GUI runs reproduce the file exactly
+        self._project_base: AnalysisConfig | None = None
 
         self._refresh_assemblies()
 
@@ -453,6 +458,12 @@ class MainWindow(QMainWindow):
         )
         if self.results.result is not None:
             cfg.aggregation = self.results.result.config.aggregation
+        base = self._project_base
+        if base is not None:
+            cfg.aggregation = copy.deepcopy(base.aggregation)
+            cfg.output = copy.deepcopy(base.output)
+            cfg.chrom_alias = base.chrom_alias
+            cfg.plot.dpi = base.plot.dpi
         cfg.plot.y_axis = self.results.yaxis_combo.currentText()
         cfg.plot.normalization = self.results.norm_combo.currentText()
         cfg.plot.show_sem = self.results.sem_check.isChecked()
@@ -477,6 +488,7 @@ class MainWindow(QMainWindow):
         return cfg
 
     def apply_config(self, cfg: AnalysisConfig) -> None:
+        self._project_base = cfg
         self.selection.genome.set_current(cfg.assembly)
         self.selection.te.select_repeat(cfg.repeat.name)
         self.selection.filters.apply_filter_config(cfg.filters)

@@ -79,6 +79,27 @@ class TestMainWindow:
         cfg2 = window.collect_config()
         assert cfg2.to_dict()["tracks"] == cfg.to_dict()["tracks"]
 
+    def test_opened_project_keeps_settings_without_gui_controls(
+            self, window, golden_dir):
+        # regression (0.2.1): File > Open project dropped aggregation.bin_size
+        # (no GUI control) and ran with the default, so a GUI run of a
+        # project file did not reproduce the CLI run of the same file
+        window.selection.genome.set_current("testasm")
+        window.selection.te.select_repeat("TST1")
+        window.tracks.add_files([golden_dir["bigwig"]])
+        cfg = window.collect_config()
+        cfg.aggregation.bin_size = 50
+        cfg.aggregation.statistic = "median"
+        cfg.chrom_alias = False
+        cfg.plot.dpi = 123
+        cfg.output.dir = "some/dir"
+        window.apply_config(cfg)
+        got = window.collect_config().to_dict()
+        want = cfg.to_dict()
+        for key in ("aggregation", "output", "chrom_alias"):
+            assert got[key] == want[key], key
+        assert got["plot"]["dpi"] == 123
+
     def test_results_view_populates(self, window, golden_dir, golden_store):
         cfg = AnalysisConfig(
             assembly="testasm",

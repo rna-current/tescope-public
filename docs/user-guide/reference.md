@@ -1,6 +1,6 @@
 # TEscope User Guide — complete control reference
 
-Documented version: **TEscope 0.2.1** (verified on the 0.2.0rc2 candidate; 0.2.1 differs from it only in the version string and the repository URL; every behavior below was
+Documented version: **TEscope 0.2.1** (verified on the 0.2.0rc2 candidate; 0.2.1 differs from it in the version string, the repository URL and the project-open fix listed in the changelog; every behavior below was
 verified against the application code and the running GUI of this
 version; nothing is inferred from a control's name). Coordinates in
 every on-screen readout are **1-based inclusive**; the single

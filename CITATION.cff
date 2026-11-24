@@ -9,7 +9,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-0923-9187"
     affiliation: "Department of Genomic Medicine, Biomedical Research Institute, Seoul National University Hospital, Seoul National University College of Medicine, Seoul, Republic of Korea"
 version: 0.2.1
-date-released: "2026-11-23"
+date-released: "2026-11-24"
 doi: 10.5281/zenodo.24458256
 license: MIT
 repository-code: "https://github.com/rna-current/tescope-public"
