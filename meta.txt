@@ -1,0 +1,1 @@
+sha=e7490cf816f1166b629457027a1c5590a01c4c6d ref=refs/tags/v0.2.1 event=push run=45310076748 attempt=1 workflow=Package desktop apps job=release
