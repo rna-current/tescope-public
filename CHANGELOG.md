@@ -2,11 +2,16 @@
 
 TEscope follows [semantic versioning](https://semver.org).
 
-## [0.2.1] — 2026-11-23
+## [0.2.1] — 2026-11-24
 
-Packaging fix, no application change: the Linux bundle is built on a
-pinned image (glibc 2.39) and the build now checks that requirement.
-The 0.2.0 Linux bundle required glibc 2.43 and should not be used.
+- Fixed: a project opened in the GUI (File > Open project) now keeps the
+  file's settings that have no GUI control (aggregation bin size and
+  statistic, output settings, chromosome-alias policy, export dpi). In
+  0.2.0 such a run used the default bin size (10 bp), so it did not
+  reproduce the command-line run of the same file.
+- Packaging: the Linux bundle is built on a pinned image (glibc 2.39) and
+  the build checks that requirement. The 0.2.0 Linux bundle required
+  glibc 2.43 and should not be used.
 
 ## [0.2.0] — 2026-11-23
 
